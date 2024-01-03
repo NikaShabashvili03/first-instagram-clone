@@ -6,7 +6,7 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 
 export async function POST(
   request: Request,
-) {
+): Promise<any> {
   const currentUser = await getCurrentUser()
 
   if(!currentUser){

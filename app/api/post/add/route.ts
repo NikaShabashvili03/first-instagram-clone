@@ -4,9 +4,7 @@ import bcrypt from 'bcrypt'
 import prisma from "@/app/libs/prismadb";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 
-export async function POST(
-  request: Request,
-) {
+export async function POST(request: Request): Promise<any> {
   const currentUser = await getCurrentUser()
 
   if(!currentUser){

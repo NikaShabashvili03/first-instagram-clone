@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  surname         String
+  fullname        String
+  email           String   @unique
+  avatar          String?  
+  hashedPassword  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+
+  posts            Posts[]
+  comments         Comments[]
+  likes            Likes[]
+  reply            Reply[]
+
+
+  followers        Followers[]
+  follow           Followers[] @relation("Follow")
+
+
+  followings       Followings[]
+  following        Followings[] @relation("Following")
+}
+
+
+model Followers {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  myId          String
+  me User @relation(fields: [myId], references: [id], onDelete: Cascade)
+  
+  otherId     String
+  other User @relation("Follow", fields: [otherId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@unique([myId, otherId])
+}
+
+model Followings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  myId          String
+  me User @relation(fields: [myId], references: [id], onDelete: Cascade)
+  
+  otherId     String
+  other User @relation("Following", fields: [otherId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([myId, otherId])
+}
+
+
+model Posts {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  image           String[]
+  
+
+  userId          String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  comments        Comments[]
+  likes           Likes[]
+}
+
+model Comments {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  content         String
+
+  userId          String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  postId          String
+  post Posts @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  likes       Likes[]
+  reply       Reply[]
+}
+
+model Likes {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+
+  postId          String?
+  post Posts? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  commentId       String?
+  comment Comments? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId          String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([postId, userId, commentId])
+}
+
+
+model Reply {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  content         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  commentId       String
+  comment Comments @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  userId          String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
